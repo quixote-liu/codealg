@@ -38,8 +38,7 @@ func TestOAPEEncryptAndDecrypt(t *testing.T) {
 	prikey, pubkey, err := GenRSAKey(2048)
 	assert.Nil(t, err)
 
-	// plaintext := []byte("hello, this is plain, we will test the encryption and decryption of OAEP")
-	plaintext := []byte("hello, ")
+	plaintext := []byte("hello, this is plain, we will test the encryption and decryption of OAEP")
 
 	ciphertext, err := EncryptOAEP(plaintext, pubkey)
 	assert.Nil(t, err)
