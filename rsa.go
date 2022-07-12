@@ -10,6 +10,8 @@ import (
 	"fmt"
 )
 
+// ----------------- OAEP --------------------------------
+
 func EncryptOAEP(plaintext, publickKey []byte) ([]byte, error) {
 	pub, err := parsePublicKey(publickKey)
 	if err != nil {
@@ -26,6 +28,8 @@ func DecryptOAEP(ciphertext, privateKey []byte) ([]byte, error) {
 	return rsa.DecryptOAEP(sha256.New(), rand.Reader, priv, ciphertext, nil)
 }
 
+// ----------------- PKCS1v15 --------------------------------
+
 func EncryptPKCS1v15(plaintext, publicKey []byte) ([]byte, error) {
 	pub, err := parsePublicKey(publicKey)
 	if err != nil {
@@ -41,6 +45,8 @@ func DecryptPKCS1v15(ciphertext []byte, privateKey []byte) ([]byte, error) {
 	}
 	return rsa.DecryptPKCS1v15(rand.Reader, priv, ciphertext)
 }
+
+// ----------------- common --------------------------------
 
 func GenRSAKey(bits int) (privateKey, publicKey []byte, err error) {
 	priKey, err := rsa.GenerateKey(rand.Reader, bits)
