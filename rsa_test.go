@@ -34,32 +34,133 @@ func TestRSAGenKey(t *testing.T) {
 	assert.NotNil(t, pubkey)
 }
 
-func TestOAPEEncryptAndDecrypt(t *testing.T) {
-	prikey, pubkey, err := GenRSAKey(2048)
+func TestEncryptOAEP(t *testing.T) {
+	privKey, pubKey, err := GenRSAKey(1024)
 	assert.Nil(t, err)
-
-	plaintext := []byte("hello, this is plain, we will test the encryption and decryption of OAEP")
-
-	ciphertext, err := EncryptOAEP(plaintext, pubkey)
-	assert.Nil(t, err)
-
-	actual, err := DecryptOAEP(ciphertext, prikey)
-	assert.Nil(t, err)
-
-	assert.Equal(t, plaintext, actual)
+	tests := []struct {
+		name      string
+		plaintext []byte
+		wantErr   bool
+		pubKey    []byte
+	}{
+		{"should pass with correct arguments", []byte("hello, world"), false, pubKey},
+		{"should respond err with empty plain text", []byte(""), true, pubKey},
+		{"should respond err with incorrect public key", []byte("hello, world"), true, []byte("error_public_key")},
+		{"should respond err with empty public key", []byte("hello, world"), true, []byte("")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ciphertext, err := EncryptOAEP(tt.plaintext, tt.pubKey)
+			if err != nil {
+				if tt.wantErr {
+					return
+				}
+				assert.FailNow(t, "want nil error but get error %s", err)
+			}
+			actual, _ := DecryptOAEP(ciphertext, privKey)
+			assert.Equal(t, tt.plaintext, actual)
+		})
+	}
 }
 
-func TestEncryptAndDecryptOfPKCS1V15(t *testing.T) {
-	prikey, pubkey, err := GenRSAKey(1024)
+func TestDecryptOAEP(t *testing.T) {
+	privKey, pubKey, err := GenRSAKey(1024)
 	assert.Nil(t, err)
+	ciphertext := func(plaintext []byte) []byte {
+		val, _ := EncryptOAEP(plaintext, pubKey)
+		return val
+	}
+	tests := []struct {
+		name       string
+		ciphertext []byte
+		wantErr    bool
+		expect     string
+		privKey    []byte
+	}{
+		{"should pass with correct arguments", ciphertext([]byte("hello, world")), false, "hello, world", privKey},
+		{"should respond err with empty cipher text", []byte(""), true, "hello, world", privKey},
+		{"should respond err with incorrect private key", []byte("hello, world"), true, "hello, world", []byte("error_private_key")},
+		{"should respond err with empty private key", ciphertext([]byte("hello, world")), true, "hello, world", []byte("")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual, err := DecryptOAEP(tt.ciphertext, tt.privKey)
+			if err != nil {
+				if tt.wantErr {
+					return
+				}
+				assert.FailNow(t, "want nil error but get error %s", err)
+			}
+			assert.Equal(t, tt.expect, string(actual))
+		})
+	}
+}
 
-	plaintext := []byte("hello, this is plain, we will test the encryption and decryption of PKCS1V15")
-
-	ciphertext, err := EncryptPKCS1v15(plaintext, pubkey)
+func TestEncryptPKCS1v15(t *testing.T) {
+	privKey, pubKey, err := GenRSAKey(1024)
 	assert.Nil(t, err)
+	tests := []struct {
+		name      string
+		plaintext []byte
+		wantErr   bool
+		pubKey    []byte
+	}{
+		{"should pass with correct arguments", []byte("hello, world"), false, pubKey},
+		{"should respond err with empty plain text", []byte(""), true, pubKey},
+		{"should respond err with incorrect public key", []byte("hello, world"), true, []byte("error_public_key")},
+		{"should respond err with empty public key", []byte("hello, world"), true, []byte("")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ciphertext, err := EncryptPKCS1v15(tt.plaintext, tt.pubKey)
+			if err != nil {
+				if tt.wantErr {
+					return
+				}
+				assert.FailNow(t, "want nil error but get error %s", err)
+			}
+			actual, _ := DecryptPKCS1v15(ciphertext, privKey)
+			assert.Equal(t, tt.plaintext, actual)
+		})
+	}
+}
 
-	actual, err := DecryptPKCS1v15(ciphertext, prikey)
+func TestDecryptPKCS1v15(t *testing.T) {
+	privKey, pubKey, err := GenRSAKey(1024)
 	assert.Nil(t, err)
+	ciphertext := func(plaintext []byte) []byte {
+		val, _ := EncryptPKCS1v15(plaintext, pubKey)
+		return val
+	}
+	tests := []struct {
+		name       string
+		ciphertext []byte
+		wantErr    bool
+		expect     string
+		privKey    []byte
+	}{
+		{"should pass with correct arguments", ciphertext([]byte("hello, world")), false, "hello, world", privKey},
+		{"should respond err with empty cipher text", []byte(""), true, "hello, world", privKey},
+		{"should respond err with incorrect private key", []byte("hello, world"), true, "hello, world", []byte("error_private_key")},
+		{"should respond err with empty private key", ciphertext([]byte("hello, world")), true, "hello, world", []byte("")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual, err := DecryptPKCS1v15(tt.ciphertext, tt.privKey)
+			if err != nil {
+				if tt.wantErr {
+					return
+				}
+				assert.FailNow(t, "want nil error but get error %s", err)
+			}
+			assert.Equal(t, tt.expect, string(actual))
+		})
+	}
+}
 
-	assert.Equal(t, plaintext, actual)
+func TestGenerateKey(t *testing.T) {
+	privateKey, publicKey, err := GenRSAKey(1024)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, privateKey)
+	assert.NotEmpty(t, publicKey)
 }
