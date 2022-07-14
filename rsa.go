@@ -48,6 +48,12 @@ func DecryptPKCS1v15(ciphertext []byte, privateKey []byte) ([]byte, error) {
 
 // ----------------- common --------------------------------
 
+const (
+	RsaKeyBits1024 = 1024
+	RsaKeyBits2048 = 2048
+	RsaKeyBits4096 = 4096
+)
+
 func GenRSAKey(bits int) (privateKey, publicKey []byte, err error) {
 	priKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
