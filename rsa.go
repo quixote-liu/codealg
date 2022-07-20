@@ -2,6 +2,7 @@ package codealg
 
 import (
 	"bytes"
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -44,6 +45,30 @@ func DecryptPKCS1v15(ciphertext []byte, privateKey []byte) ([]byte, error) {
 		return nil, err
 	}
 	return rsa.DecryptPKCS1v15(rand.Reader, priv, ciphertext)
+}
+
+// ---------------- sign PKCS1v15 --------------------------
+
+func SignPKCS1v15(message, privateKey []byte) ([]byte, error) {
+	priv, err := parsePrivateKey(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	hashed := sha256.Sum256(message)
+	signature, err := rsa.SignPKCS1v15(rand.Reader, priv, crypto.SHA256, hashed[:])
+	if err != nil {
+		return nil, err
+	}
+	return signature, nil
+}
+
+func VerifyPKCS1v15(signature, message, publicKey []byte) error {
+	pub, err := parsePublicKey(publicKey)
+	if err != nil {
+		return err
+	}
+	hashed := sha256.Sum256(message)
+	return rsa.VerifyPKCS1v15(pub, crypto.SHA256, hashed[:], signature)
 }
 
 // ----------------- common --------------------------------

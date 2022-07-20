@@ -96,6 +96,64 @@ func TestDecryptOAEP(t *testing.T) {
 	}
 }
 
+func TestSignPKCS1v15(t *testing.T) {
+	privateKey, publicKey, err := GenRSAKey(RsaKeyBits2048)
+	assert.Nil(t, err)
+	tests := []struct {
+		name    string
+		message []byte
+		privKey []byte
+		wantErr bool
+	}{
+		{"should pass with correct private key", []byte("hello, world"), privateKey, false},
+		{"should return err with incorrect private key", []byte("hello, world"), []byte("error_privateKey"), true},
+		{"should pass with empty message", []byte("hello, world"), privateKey, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sig, err := SignPKCS1v15(tt.message, tt.privKey)
+			if tt.wantErr {
+				assert.NotNil(t, err)
+				return
+			} else {
+				assert.Nil(t, err)
+			}
+			err = VerifyPKCS1v15(sig, tt.message, publicKey)
+			assert.Nil(t, err)
+		})
+	}
+}
+
+func TestVerifyPKCS1v15(t *testing.T) {
+	privateKey, publicKey, err := GenRSAKey(RsaKeyBits2048)
+	assert.Nil(t, err)
+	message := []byte("hello, world")
+	sig, err := SignPKCS1v15(message, privateKey)
+	assert.Nil(t, err)
+	tests := []struct {
+		name      string
+		signature []byte
+		message   []byte
+		pubKey    []byte
+		wantErr   bool
+	}{
+		{"should pass with correct message and signature", sig, message, publicKey, false},
+		{"should return error with incorrect signature", []byte("error_signature"), message, publicKey, true},
+		{"should return error with incorrect message", sig, []byte("error_message"), publicKey, true},
+		{"should return error with incorrect public key", sig, message, []byte("error_public_key"), true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err = VerifyPKCS1v15(tt.signature, tt.message, tt.pubKey)
+			if tt.wantErr {
+				assert.NotNil(t, err)
+				return
+			}
+			assert.Nil(t, err)
+		})
+	}
+}
+
 func TestEncryptPKCS1v15(t *testing.T) {
 	privKey, pubKey, err := GenRSAKey(1024)
 	assert.Nil(t, err)
