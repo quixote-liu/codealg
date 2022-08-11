@@ -217,8 +217,10 @@ func TestDecryptPKCS1v15(t *testing.T) {
 }
 
 func TestGenerateKey(t *testing.T) {
-	privateKey, publicKey, err := GenRSAKey(1024)
+	privateKey, publicKey, err := GenRSAKey(2048)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, privateKey)
 	assert.NotEmpty(t, publicKey)
+	// fmt.Println(string(privateKey))
+	// fmt.Println(string(publicKey))
 }

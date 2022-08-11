@@ -95,6 +95,7 @@ func marshalPrivateKey(key *rsa.PrivateKey) ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
 	stream := x509.MarshalPKCS1PrivateKey(key)
 	err := pem.Encode(buf, &pem.Block{
+		Type:  "RSA PRIVATE KEY",
 		Bytes: stream,
 	})
 	return buf.Bytes(), err
@@ -112,6 +113,7 @@ func marshalPublicKey(key *rsa.PublicKey) ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
 	stream := x509.MarshalPKCS1PublicKey(key)
 	err := pem.Encode(buf, &pem.Block{
+		Type:  "RSA PUBLIC KEY",
 		Bytes: stream,
 	})
 	return buf.Bytes(), err

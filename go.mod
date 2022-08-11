@@ -1,4 +1,4 @@
-module codealg
+module github.com/quixote-liu/codealg
 
 go 1.17
 
