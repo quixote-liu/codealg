@@ -1,2 +1,2 @@
 # codealg
-一个加密解密的算法实现，包括一些常见的对称算法和非对称算法
+An encryption and decryption algorithm implementation, including common symmetric algorithms (such as aes) and asymmetric algorithms (such as rsa).
